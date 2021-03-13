@@ -3,56 +3,55 @@
 using namespace std;
 using namespace sf;
 
-//  const defines an immutable compile-time value
-constexpr int WINDOW_WIDTH{800};
-constexpr int WINDOW_HEIGHT{600};
-constexpr float BALL_RADIUS{10.f};
+constexpr int windowWidth{800};
+constexpr int windowHeight{600};
 
-//  Let's create a class for our Ball
-//  'struct' == 'class' in c++
+constexpr float ballRadius{10.f};
+
+//  Let's add the velocity
+constexpr float ballVelocity{8.f};
+
 struct Ball
 {
-    //  CircleShape is an SFML class that
-    //  defines a renderable circle
+
     CircleShape shape;
     
-    //  Ball Constructor
-    //  argument mX -> starting x coordinate
-    //  argument mY -> starting y coordinate
+    //  2D vector that stores the ball's velocity
+    Vector2f velocity{-ballVelocity, -ballVelocity};
+    
     Ball(float mX, float mY)
     {
-        //  Apply position, radius, color and origin
-        //  to the CircleShape 'shape'
         shape.setPosition(mX, mY);
-        shape.setRadius(BALL_RADIUS);
+        shape.setRadius(ballRadius);
         shape.setFillColor(Color::Red);
-        shape.setOrigin(BALL_RADIUS, BALL_RADIUS);
+        shape.setOrigin(ballRadius, ballRadius);
     }
+    
+    //  Let's "update" the ball: move it's shape
+    //  by the current velocity
+    void update() { shape.move(velocity); }
+    
 };
 
 int main()
 {
+    Ball ball {windowWidth/2, windowHeight/2};
     
-    //  Create ball instance
-    //  positioned at the center of the window
-    Ball ball {WINDOW_WIDTH/2, WINDOW_HEIGHT/2};
-    
-    // Creation of the game window
-    RenderWindow window{{WINDOW_WIDTH, WINDOW_HEIGHT}, "Arkanoid - 2"};
+    RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 3"};
     window.setFramerateLimit(60);
     
-    // Game loop
-    while(true)
+     while(true)
     {
-        //  "Clear" the window from the previously drawn graphics
+       
         window.clear(Color::Black);
         
-        //  if "Escape" is pressed, break out of the loop
         if(Keyboard::isKeyPressed(Keyboard::Key::Escape)) break;
         
-        //  show the window contents
+        ball.update();
+        
         window.draw(ball.shape);
         window.display();
     }
+    
     return 0;
 }
