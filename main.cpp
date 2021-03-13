@@ -116,10 +116,10 @@ int main()
     //  ball instance
     Ball ball {windowWidth/2, windowHeight/2};
     
-    //  paddle instance
+    //  paddle starting position
     Paddle paddle {windowWidth / 2, windowHeight - 50};
     
-    RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 3"};
+    RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 5"};
     window.setFramerateLimit(60);
     
      while (window.isOpen())
