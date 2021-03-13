@@ -14,10 +14,8 @@ constexpr float ballVelocity{8.f};
 struct Ball
 {
 
-    CircleShape shape;
-    
-    //  2D vector that stores the ball's velocity
-    Vector2f velocity{-ballVelocity, -ballVelocity};
+    CircleShape shape;    
+    Vector2f velocity{-ballVelocity, -ballVelocity}; // stores the ball's velocity
     
     Ball(float mX, float mY)
     {
@@ -27,10 +25,39 @@ struct Ball
         shape.setOrigin(ballRadius, ballRadius);
     }
     
-    //  Let's "update" the ball: move it's shape
-    //  by the current velocity
-    void update() { shape.move(velocity); }
+    void update() // update location of the ball by using the current velocity
+    { 
+        shape.move(velocity); 
+        
+        //  We need to keep the ball "inside the screen"
+        
+        //  if it's leaving towards the left, we need to set
+        //  horizontal velocity to a positive value (towards the right)
+        
+        if (left() < 0) 
+            velocity.x = ballVelocity;
+        
+        //  Otherwise, if it's leaving towards the right, we need to
+        //  set horizontal velocity to a negative value (towards the left)
+        
+        else if (right() > windowWidth) 
+            velocity.x = -ballVelocity;
+            
+        //  The same idea can be applied for top/bottom collisions
+        if (top() < 0)
+            velocity.y = ballVelocity;
+        else if (bottom() > windowHeight)
+            velocity.y = -ballVelocity;
+    } 
     
+    //  We can also create "property" methods to easily
+    //  get commonly used values
+    float x()       { return shape.getPosition().x; }
+    float y()       { return shape.getPosition().y; }
+    float left()    { return x() - shape.getRadius(); }
+    float right()   { return x() + shape.getRadius(); }
+    float top()     { return y() - shape.getRadius(); }
+    float bottom()  { return y() + shape.getRadius(); }
 };
 
 int main()
@@ -40,9 +67,9 @@ int main()
     RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 3"};
     window.setFramerateLimit(60);
     
-     //while(true)
      while (window.isOpen())
     {
+        window.clear(Color::Black);
        
         Event event;
         while(window.pollEvent(event))
@@ -51,7 +78,6 @@ int main()
                 window.close();
         }
         
-        window.clear(Color::Black);
         
         ball.update();
         
