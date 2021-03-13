@@ -40,12 +40,18 @@ int main()
     RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 3"};
     window.setFramerateLimit(60);
     
-     while(true)
+     //while(true)
+     while (window.isOpen())
     {
        
-        window.clear(Color::Black);
+        Event event;
+        while(window.pollEvent(event))
+        {
+            if (event.type == Event::Closed)
+                window.close();
+        }
         
-        if(Keyboard::isKeyPressed(Keyboard::Key::Escape)) break;
+        window.clear(Color::Black);
         
         ball.update();
         
