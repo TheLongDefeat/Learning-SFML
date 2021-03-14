@@ -1,3 +1,4 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
 
 using namespace std;
@@ -107,9 +108,44 @@ struct Paddle
     float left()    { return x() - shape.getSize().x / 2.f; }
     float right()   { return x() + shape.getSize().x / 2.f; }
     float top()     { return y() - shape.getSize().y / 2.f; }
-    float bottom()    { return x() + shape.getSize().y / 2.f; }
+    float bottom()  { return x() + shape.getSize().y / 2.f; }
     
 };
+
+//  Dealing with collisions: Let's define a generic function
+//  to check if two shapes are intersecting (colliding).
+template <class T1, class T2> 
+bool isIntersecting(T1& mA, T2& mB)
+{
+    return  mA.right() >= mB.left() && mA.left() <= mB.right() && 
+            mA.bottom() >= mB.top() && mA.top() <= mB.bottom();
+}
+
+//  Let's define a function that deals with paddle/ball collision.
+void testCollision(Paddle& mPaddle, Ball& mBall)
+{
+    //  Exits function if there's no intersection.
+    if(!isIntersecting(mPaddle, mBall)) 
+        {
+            //cout << "no intersection" << endl;
+            return;
+        }
+    
+    //  otherwise let's "push" the ball upwards.
+    mBall.velocity.y = -ballVelocity;
+    cout << "intersection" << endl;
+    
+    //  Let's direct it dependently on the position where the
+    //  paddle was hit.
+    if (mBall.x() < mPaddle.x())
+    {
+        mBall.velocity.x = -ballVelocity;        
+    }
+    else
+    { 
+        mBall.velocity.x = ballVelocity;
+    }
+}
 
 int main()
 {
@@ -119,7 +155,7 @@ int main()
     //  paddle starting position
     Paddle paddle {windowWidth / 2, windowHeight - 50};
     
-    RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 5"};
+    RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 6"};
     window.setFramerateLimit(60);
     
      while (window.isOpen())
@@ -138,6 +174,10 @@ int main()
         //  paddle update
         paddle.update();
         
+        //  collision test
+        testCollision(paddle, ball);
+        
+        //  draw ball shape on the window
         window.draw(ball.shape);
         
         //  draw paddle shape on the window
