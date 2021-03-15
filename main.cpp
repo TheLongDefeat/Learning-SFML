@@ -16,6 +16,12 @@ constexpr float paddleWidth{60.f};
 constexpr float paddleHeight{20.f};
 constexpr float paddleVelocity{8.f};
 
+//  constants for the bricks
+constexpr float blockWidth{60.f};
+constexpr float blockHeight{20.f};
+constexpr int countBlocksX{11};
+constexpr int countBlocksY{4};
+
 struct Ball
 {
 
@@ -96,11 +102,17 @@ struct Paddle
          */ 
          
          if (Keyboard::isKeyPressed(Keyboard::Key:: Left) && left() > 0)
+         {
             velocity.x = -paddleVelocity;
+         }
          else if (Keyboard::isKeyPressed(Keyboard::Key:: Right) && right() < windowWidth)
+         {
             velocity.x = paddleVelocity;
-        else
+         }
+         else
+         {
             velocity.x = 0;
+         }
     }
     
     float x()       { return shape.getPosition().x; }
@@ -110,6 +122,32 @@ struct Paddle
     float top()     { return y() - shape.getSize().y / 2.f; }
     float bottom()  { return x() + shape.getSize().y / 2.f; }
     
+};
+
+//  Brick "class"
+struct Brick
+{
+    RectangleShape shape;
+    
+    //  This boolean value will be used to check
+    //  whether a brick has been hit or not.
+    bool destroyed{false};
+    
+    //  The constructor is almost identical to the 'paddle' one.
+    Brick(float mX, float mY)
+    {
+        shape.setPosition(mX, mY);
+        shape.setSize({blockWidth, blockHeight});
+        shape.setFillColor(Color::Yellow);
+        shape.setOrigin(blockWidth / 2.f, blockHeight / 2.f);
+    }
+    
+    float x()       { return shape.getPosition().x; };
+    float y()       { return shape.getPosition().y; };
+    float left()    { return x() - shape.getSize().x / 2.f; }
+    float right()   { return x() + shape.getSize().x / 2.f; }
+    float top()     { return y() - shape.getSize().y / 2.f; }
+    float bottom()  { return y() + shape.getSize().y / 2.f; }
 };
 
 //  Dealing with collisions: Let's define a generic function
@@ -125,26 +163,13 @@ bool isIntersecting(T1& mA, T2& mB)
 void testCollision(Paddle& mPaddle, Ball& mBall)
 {
     //  Exits function if there's no intersection.
-    if(!isIntersecting(mPaddle, mBall)) 
-        {
-            //cout << "no intersection" << endl;
-            return;
-        }
-    
-    //  otherwise let's "push" the ball upwards.
+    if(!isIntersecting(mPaddle, mBall)) return;
+
     mBall.velocity.y = -ballVelocity;
-    cout << "intersection" << endl;
-    
-    //  Let's direct it dependently on the position where the
-    //  paddle was hit.
-    if (mBall.x() < mPaddle.x())
-    {
-        mBall.velocity.x = -ballVelocity;        
-    }
+    if(mBall.x() < mPaddle.x())
+        mBall.velocity.x = -ballVelocity;
     else
-    { 
         mBall.velocity.x = ballVelocity;
-    }
 }
 
 int main()
@@ -155,12 +180,22 @@ int main()
     //  paddle starting position
     Paddle paddle {windowWidth / 2, windowHeight - 50};
     
-    RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 6"};
+    //  We will use a 'std::vector' to contain any number
+    //  of "brick' instances.
+    vector<Brick> bricks;
+    
+    //  we fill up our vector via a 2D for loop, creating
+    //  bricks in a grid-like pattern.
+    for(int iX{0}; iX < countBlocksX; ++iX)
+        for(int iY{0}; iY < countBlocksY; ++iY)
+            bricks.emplace_back(
+                (iX + 1) * (blockWidth + 3) + 22, (iY + 2) * (blockHeight + 3));
+    
+    RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 7"};
     window.setFramerateLimit(60);
     
      while (window.isOpen())
     {
-        window.clear(Color::Black);
        
         Event event;
         while(window.pollEvent(event))
@@ -169,6 +204,7 @@ int main()
                 window.close();
         }
         
+        window.clear(Color::Black);
         ball.update();
         
         //  paddle update
@@ -182,6 +218,11 @@ int main()
         
         //  draw paddle shape on the window
         window.draw(paddle.shape);
+        
+        //  We must draw every brick on the window!
+        //  Let's use a modern C++11 for-each loop, that allows
+        //  us to intuitively say: "Draw every 'brick' in 'bricks'".
+        for(auto& brick : bricks) window.draw(brick.shape);
         
         window.display();
     }
